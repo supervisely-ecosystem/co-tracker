@@ -1,3 +1,4 @@
+from pathlib import Path
 import supervisely as sly
 from supervisely.nn.prediction_dto import PredictionPoint
 import os
@@ -61,6 +62,6 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
 
 
 model = CoTrackerModel(
-    custom_inference_settings="./supervisely_integration/serve/model_settings.yaml"
+    custom_inference_settings=str(Path(__file__).parents[1].joinpath("model_settings.yaml").resolve())
 )
 model.serve()
