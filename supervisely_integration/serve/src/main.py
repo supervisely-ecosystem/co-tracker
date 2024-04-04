@@ -3,7 +3,7 @@ import supervisely as sly
 from supervisely.nn.prediction_dto import PredictionPoint
 import os
 from dotenv import load_dotenv
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Union
 from cotracker.predictor import CoTrackerPredictor
 import torch
 import numpy as np
@@ -34,7 +34,7 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
         self,
         rgb_images: List[np.ndarray],
         settings: Dict[str, Any],
-        start_object: PredictionPoint,
+        start_object: Union[PredictionPoint, List[PredictionPoint]],
     ) -> List[PredictionPoint]:
         # cotracker fails to track short sequences, so it is necessary to lengthen them by duplicating last frame
         lengthened = False
@@ -45,18 +45,23 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
                 rgb_images.append(rgb_images[-1])
         # disable gradient calculation
         torch.set_grad_enabled(False)
-        class_name = start_object.class_name
+        if not isinstance(start_object, list):
+            start_object = [start_object]
+        class_names = [obj.class_name for obj in start_object]
         input_video = torch.from_numpy(np.array(rgb_images)).permute(0, 3, 1, 2)[None].float()
         input_video = input_video.to(self.device)
-        query = torch.tensor([[0, start_object.col, start_object.row]]).float()
+        query = torch.tensor([[0, obj.col, obj.row] for obj in start_object]).float()
         query = query.to(self.device)
         pred_tracks, pred_visibility = self.model(input_video, queries=query[None])
-        pred_tracks = pred_tracks.squeeze().cpu()[1:]
+        pred_tracks: torch.Tensor
+        pred_tracks = pred_tracks.cpu()[1:]
         if lengthened:
             pred_tracks = pred_tracks[:original_length]
         pred_points = [
-            PredictionPoint(class_name, col=float(track[0]), row=float(track[1]))
-            for track in pred_tracks
+            [
+                PredictionPoint(class_name, col=float(point[0]), row=float(point[1]))
+                for point, class_name in zip(frame_track, class_names)
+            ] for frame_track in pred_tracks
         ]
         return pred_points
 
