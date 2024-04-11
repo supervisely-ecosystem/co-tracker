@@ -30,31 +30,35 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
         self.model = self.model.to(self.device)
         self.model.eval()
 
-    def predict(
+    def predict_batch(
         self,
-        rgb_images: List[np.ndarray],
+        source: List[np.ndarray],
         settings: Dict[str, Any],
         start_object: Union[PredictionPoint, List[PredictionPoint]],
     ) -> List[PredictionPoint]:
         # cotracker fails to track short sequences, so it is necessary to lengthen them by duplicating last frame
+        if len(source) == 0:
+            return []
+        if isinstance(source[0], str):
+            source = [sly.image.read(path) for path in source]
         lengthened = False
-        if len(rgb_images) < 11:
+        if len(source) < 11:
             lengthened = True
-            original_length = len(rgb_images) - 1  # do not include input frame
-            while len(rgb_images) < 11:
-                rgb_images.append(rgb_images[-1])
+            original_length = len(source) - 1  # do not include input frame
+            while len(source) < 11:
+                source.append(source[-1])
         # disable gradient calculation
         torch.set_grad_enabled(False)
         if not isinstance(start_object, list):
             start_object = [start_object]
         class_names = [obj.class_name for obj in start_object]
-        input_video = torch.from_numpy(np.array(rgb_images)).permute(0, 3, 1, 2)[None].float()
+        input_video = torch.from_numpy(np.array(source)).permute(0, 3, 1, 2)[None].float()
         input_video = input_video.to(self.device)
         query = torch.tensor([[0, obj.col, obj.row] for obj in start_object]).float()
         query = query.to(self.device)
         pred_tracks, pred_visibility = self.model(input_video, queries=query[None])
         pred_tracks: torch.Tensor
-        pred_tracks = pred_tracks.cpu()[1:]
+        pred_tracks = pred_tracks.cpu()[0][1:]
         if lengthened:
             pred_tracks = pred_tracks[:original_length]
         pred_points = [
