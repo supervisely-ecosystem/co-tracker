@@ -30,6 +30,36 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
         self.model = self.model.to(self.device)
         self.model.eval()
 
+    def predict(
+        self,
+        rgb_images: List[np.ndarray],
+        settings: Dict[str, Any],
+        start_object: PredictionPoint,
+    ) -> List[PredictionPoint]:
+        # cotracker fails to track short sequences, so it is necessary to lengthen them by duplicating last frame
+        lengthened = False
+        if len(rgb_images) < 11:
+            lengthened = True
+            original_length = len(rgb_images) - 1  # do not include input frame
+            while len(rgb_images) < 11:
+                rgb_images.append(rgb_images[-1])
+        # disable gradient calculation
+        torch.set_grad_enabled(False)
+        class_name = start_object.class_name
+        input_video = torch.from_numpy(np.array(rgb_images)).permute(0, 3, 1, 2)[None].float()
+        input_video = input_video.to(self.device)
+        query = torch.tensor([[0, start_object.col, start_object.row]]).float()
+        query = query.to(self.device)
+        pred_tracks, pred_visibility = self.model(input_video, queries=query[None])
+        pred_tracks = pred_tracks.squeeze().cpu()[1:]
+        if lengthened:
+            pred_tracks = pred_tracks[:original_length]
+        pred_points = [
+            PredictionPoint(class_name, col=float(track[0]), row=float(track[1]))
+            for track in pred_tracks
+        ]
+        return pred_points
+
     def predict_batch(
         self,
         source: List[np.ndarray],
