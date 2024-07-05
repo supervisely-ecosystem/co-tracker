@@ -1,8 +1,9 @@
+from pathlib import Path
 import supervisely as sly
 from supervisely.nn.prediction_dto import PredictionPoint
 import os
 from dotenv import load_dotenv
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Union
 from cotracker.predictor import CoTrackerPredictor
 import torch
 import numpy as np
@@ -58,9 +59,48 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
             for track in pred_tracks
         ]
         return pred_points
+    
+    def predict_batch(
+        self,
+        source: List[np.ndarray],
+        settings: Dict[str, Any],
+        start_object: Union[PredictionPoint, List[PredictionPoint]],
+    ) -> List[PredictionPoint]:
+        # cotracker fails to track short sequences, so it is necessary to lengthen them by duplicating last frame
+        if len(source) == 0:
+            return []
+        if isinstance(source[0], str):
+            source = [sly.image.read(path) for path in source]
+        lengthened = False
+        if len(source) < 11:
+            lengthened = True
+            original_length = len(source) - 1  # do not include input frame
+            while len(source) < 11:
+                source.append(source[-1])
+        # disable gradient calculation
+        torch.set_grad_enabled(False)
+        if not isinstance(start_object, list):
+            start_object = [start_object]
+        class_names = [obj.class_name for obj in start_object]
+        input_video = torch.from_numpy(np.array(source)).permute(0, 3, 1, 2)[None].float()
+        input_video = input_video.to(self.device)
+        query = torch.tensor([[0, obj.col, obj.row] for obj in start_object]).float()
+        query = query.to(self.device)
+        pred_tracks, pred_visibility = self.model(input_video, queries=query[None])
+        pred_tracks: torch.Tensor
+        pred_tracks = pred_tracks.cpu()[0][1:]
+        if lengthened:
+            pred_tracks = pred_tracks[:original_length]
+        pred_points = [
+            [
+                PredictionPoint(class_name, col=float(point[0]), row=float(point[1]))
+                for point, class_name in zip(frame_track, class_names)
+            ] for frame_track in pred_tracks
+        ]
+        return pred_points
 
 
 model = CoTrackerModel(
-    custom_inference_settings="./supervisely_integration/serve/model_settings.yaml"
+    custom_inference_settings=str(Path(__file__).parents[1].joinpath("model_settings.yaml").resolve())
 )
 model.serve()
