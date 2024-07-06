@@ -62,7 +62,7 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
     
     def predict_batch(
         self,
-        source: List[np.ndarray],
+        rgb_images: List[np.ndarray],
         settings: Dict[str, Any],
         start_object: Union[PredictionPoint, List[PredictionPoint]],
     ) -> List[PredictionPoint]:
