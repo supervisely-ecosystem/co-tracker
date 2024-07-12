@@ -67,22 +67,22 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
         start_object: Union[PredictionPoint, List[PredictionPoint]],
     ) -> List[PredictionPoint]:
         # cotracker fails to track short sequences, so it is necessary to lengthen them by duplicating last frame
-        if len(source) == 0:
+        if len(rgb_images) == 0:
             return []
-        if isinstance(source[0], str):
-            source = [sly.image.read(path) for path in source]
+        if isinstance(rgb_images[0], str):
+            rgb_images = [sly.image.read(path) for path in rgb_images]
         lengthened = False
-        if len(source) < 11:
+        if len(rgb_images) < 11:
             lengthened = True
-            original_length = len(source) - 1  # do not include input frame
-            while len(source) < 11:
-                source.append(source[-1])
+            original_length = len(rgb_images) - 1  # do not include input frame
+            while len(rgb_images) < 11:
+                rgb_images.append(rgb_images[-1])
         # disable gradient calculation
         torch.set_grad_enabled(False)
         if not isinstance(start_object, list):
             start_object = [start_object]
         class_names = [obj.class_name for obj in start_object]
-        input_video = torch.from_numpy(np.array(source)).permute(0, 3, 1, 2)[None].float()
+        input_video = torch.from_numpy(np.array(rgb_images)).permute(0, 3, 1, 2)[None].float()
         input_video = input_video.to(self.device)
         query = torch.tensor([[0, obj.col, obj.row] for obj in start_object]).float()
         query = query.to(self.device)
