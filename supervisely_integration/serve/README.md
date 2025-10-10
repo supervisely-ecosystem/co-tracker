@@ -10,7 +10,7 @@
   <a href="#Demo">Demo</a> 
 </p>
 
-[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervise.ly/apps/supervisely-ecosystem/co-tracker/supervisely_integration/serve)
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](../../../../supervisely-ecosystem/co-tracker/supervisely_integration/serve)
 [![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/co-tracker)
 [![views](https://app.supervise.ly/img/badges/views/supervisely-ecosystem/co-tracker/supervisely_integration/serve.png)](https://supervise.ly)
@@ -56,7 +56,7 @@ This app is an integration of CoTracker model, which is a NN-assisted interactiv
 
 # How to Run
 
-0. Go to Ecosystem page and find the [app](https://ecosystem.supervisely.com/apps/co-tracker/supervisely_integration/serve). 
+0. Go to Ecosystem page and find the [app](../../../../supervisely-ecosystem/co-tracker/supervisely_integration/serve). 
 
 1. Select one of the suggested checkpoints.
 
