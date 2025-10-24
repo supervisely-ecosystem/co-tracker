@@ -23,7 +23,7 @@
     "isolate": true,
     "headless": true,
     "gpu": "preferred",
-    "instance_version": "6.12.23",
+    "instance_version": "6.15.2",
     "session_tags": [
         "sly_video_tracking"
     ],
