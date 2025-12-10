@@ -15,7 +15,7 @@ RUN pip3 install -e .
 WORKDIR /
 RUN pip3 install opencv-python einops timm matplotlib moviepy flow_vis
 
-RUN python3 -m pip install supervisely==6.73.460
+RUN python3 -m pip install supervisely==6.73.483
 RUN apt-get update
 RUN apt-get install ffmpeg libgeos-dev libsm6 libxext6 libexiv2-dev libxrender-dev libboost-all-dev -y
 
@@ -27,3 +27,5 @@ WORKDIR checkpoints
 RUN wget https://dl.fbaipublicfiles.com/cotracker/cotracker_stride_4_wind_8.pth
 RUN wget https://dl.fbaipublicfiles.com/cotracker/cotracker_stride_4_wind_12.pth
 RUN wget https://dl.fbaipublicfiles.com/cotracker/cotracker_stride_8_wind_16.pth
+
+LABEL python_sdk_version=6.73.483
