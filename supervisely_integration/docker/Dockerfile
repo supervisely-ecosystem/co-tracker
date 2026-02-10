@@ -4,7 +4,7 @@ RUN apt update && apt install python3-pip -y
 RUN apt-get install -y git
 RUN python3 -m pip install --upgrade pip
 
-RUN pip3 install --no-cache-dir torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu128
+RUN pip3 install --no-cache-dir torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu128
 RUN git clone https://github.com/facebookresearch/co-tracker
 WORKDIR co-tracker
 
