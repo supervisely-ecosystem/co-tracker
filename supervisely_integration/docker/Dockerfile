@@ -1,12 +1,10 @@
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install python3-pip -y
 RUN apt-get install -y git
 RUN python3 -m pip install --upgrade pip
 
-RUN pip3 install torch==1.12.1+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
-RUN pip3 install torchvision==0.13.1+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
-
+RUN pip3 install --no-cache-dir torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu128
 RUN git clone https://github.com/facebookresearch/co-tracker
 WORKDIR co-tracker
 
