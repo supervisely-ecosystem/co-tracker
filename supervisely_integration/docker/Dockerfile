@@ -26,4 +26,4 @@ RUN wget https://dl.fbaipublicfiles.com/cotracker/cotracker_stride_4_wind_8.pth
 RUN wget https://dl.fbaipublicfiles.com/cotracker/cotracker_stride_4_wind_12.pth
 RUN wget https://dl.fbaipublicfiles.com/cotracker/cotracker_stride_8_wind_16.pth
 
-LABEL python_sdk_version="6.73.486"
+LABEL python_sdk_version="6.73.516"
