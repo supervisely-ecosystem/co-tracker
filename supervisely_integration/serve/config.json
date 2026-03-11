@@ -25,7 +25,8 @@
     "gpu": "preferred",
     "instance_version": "6.15.40",
     "session_tags": [
-        "sly_video_tracking"
+        "sly_video_tracking",
+        "scalable"
     ],
     "community_agent": false,
     "allowed_shapes": [
