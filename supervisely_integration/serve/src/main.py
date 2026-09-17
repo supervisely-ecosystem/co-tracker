@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from typing import Any, Dict, List, Literal, Union
 from cotracker.predictor import CoTrackerPredictor
+from streaming_frames import use_streaming_frames
 import torch
 import numpy as np
 
@@ -103,4 +104,9 @@ class CoTrackerModel(sly.nn.inference.PointTracking):
 model = CoTrackerModel(
     custom_inference_settings=str(Path(__file__).parents[1].joinpath("model_settings.yaml").resolve())
 )
+# Frames now come from the video in one streamed decode rather than one
+# videos.download-frame request each. Applied after construction, which is what
+# creates the cache it replaces. See streaming_frames.py for why.
+use_streaming_frames(model)
+
 model.serve()
